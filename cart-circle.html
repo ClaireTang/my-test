@@ -25,10 +25,22 @@
 			</template>
 			<!-- <template>新增成功了</template> -->
 		</message>
+		<message :show.sync="showWarn" >
+			<template v-slot:fail>
+				<h3>注意</h3>
+				<p>没有新增内容</p>
+			</template>
+		</message>
 		<h2 :title="title">
 			{{title}}
 		</h2>
-		
+		<p>
+			<input type="text" v-model.number="price">
+			<button @click="updatePrice">批量修改价格</button>
+		</p>
+		<div class="toolbar">
+			<button @click="$bus.$emit('message-close')">清空提示</button>
+		</div>
 		<course-add v-model="course" @add-course="addCourse"></course-add>
 		<!-- <course-add :value="course" @input="course = $event" @add-course="addCourse"></course-add> -->
 
@@ -39,6 +51,7 @@
 
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 	<script>
+		Vue.prototype.$bus = new Vue()
 		Vue.component('message', {
 			props: ['show'],
 			template: `
@@ -50,6 +63,11 @@
 					<span @click="$emit('update:show',false)">X</span>
 				</div>
 			`,
+			mounted() {
+				this.$bus.$on('message-close', () => {
+					this.$emit('update:show',false)
+				})
+			},
 			methods: {
 				
 			},
@@ -89,12 +107,12 @@
 				<div>
 					
 					<p v-if="courses.length === 0">没有任何课程</p>
-					<!-- <div v-for="c in courses" :key="c" v-bind:class="{active:selectedCourse === c}" @click="selectedCourse = c">
-						{{ c }}
+					<!-- <div v-for="c in courses" :key="c.name" v-bind:class="{active:selectedCourse === c}" @click="selectedCourse = c">
+						{{ c.name }} -￥{{c.price}}
 					</div> -->
 					<div class="courses-list" v-else>
-						<div v-for="c in courses" :key="c" :style="{backgroundColor:selectedCourse === c ? '#ccc' : 'transparent'}" @click="selectedCourse = c">
-							{{ c }}
+						<div v-for="c in courses" :key="c.name" :style="{backgroundColor:selectedCourse === c ? '#ccc' : 'transparent'}" @click="selectedCourse = c">
+							{{ c.name }} -￥{{c.price}}
 						</div>
 					</div>
 					
@@ -105,7 +123,7 @@
 		function getData() {
 			return new Promise(resolve => {
 				setTimeout(() => {
-					resolve ( ["web全站","web高级"] )
+					resolve ( [{name:"web全站"},{name:"web高级"}] )
 				}, 2000);
 			})
 		}
@@ -118,7 +136,9 @@
 					totalCount: 0,
 					courses: [],
 					course: '',
-					show: false
+					show: false,
+					showWarn: false,
+					price: 0
 				}
 			},
 			// 加载数据放在created和mounted中差不多
@@ -126,15 +146,27 @@
 				// 组件实例已创建，由于未挂载，dom不存在
 				const courses = await getData();
 				this.courses = courses;
+				this.updatePrice()
 			},
 			mounted () {
 				//dom已挂载
 			},
 			methods: {
 				addCourse() {
-					this.courses.push(this.course)
-					this.course = ''
-					this.show = true
+					if(this.course){
+						this.courses.push({name:this.course})
+						this.course = ''
+						this.show = true
+					}else{
+						this.showWarn = true
+					}
+					
+				},
+				updatePrice() {
+					this.courses.forEach(e => {
+						// e.price = this.price
+						this.$set(e,'price',this.price)
+					});
 				}
 			},
 			computed: {
