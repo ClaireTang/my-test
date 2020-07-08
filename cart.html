@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>购物车</title>
+	<style>
+		.active {
+			background-color: #ccc;
+		}
+	</style>
+</head>
+<body>
+	<div id="app">
+		<h2 :title="title">
+			{{title}}
+		</h2>
+		<p>
+			<input v-model="course" type="text" v-on:keydown.enter="addCourse"/>
+			<button @click="addCourse">新增</button>
+		</p>
+		<p v-if="courses.length === 0">没有任何课程</p>
+		<!-- <div v-for="c in courses" :key="c" v-bind:class="{active:selectedCourse === c}" @click="selectedCourse = c">
+			{{ c }}
+		</div> -->
+		<div class="courses-list" v-else>
+			<div v-for="c in courses" :key="c" :style="{backgroundColor:selectedCourse === c ? '#ccc' : 'transparent'}" @click="selectedCourse = c">
+				{{ c }}
+			</div>
+		</div>
+		<p>{{total}}</p>
+		<p>{{totalCount}}</p>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script>
+		const app = new Vue({
+			el: '#app',
+			data() {
+				return {
+					selectedCourse: '',
+					title: '开课吧购物车',
+					course: '',
+					totalCount: 0,
+					courses: ["web全站","web高级"]
+				}
+			},
+			methods: {
+				addCourse() {
+					this.courses.push(this.course)
+					this.course = ''
+				}
+			},
+			computed: {
+				total() {
+					return this.courses.length + '门'     	//返回内容
+				}
+			},
+			//默认情况下watch初始化时不会立刻执行
+			// watch: {
+			// 	courses(newValue, oldValue) {
+			// 		this.totalCount = newValue.length + "门"
+			// 	}
+			// },
+			watch: {
+				courses: {
+					immediate: true,	//立即执行
+					// deep: true,
+					handler(newValue, oldValue) {
+						this.totalCount = newValue.length + "门"	//执行操作
+					}
+				}
+			},
+		})
+		console.log(app.$options.render)
+	</script>
+</body>
+</html>

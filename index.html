@@ -3,9 +3,28 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Document</title>
+	<title>购物车</title>
 </head>
 <body>
-	hello world!
+	<div id="app">
+		<h2>
+			{{title}}
+		</h2>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script>
+		const app = new Vue({
+			el: '#app',
+			data() {
+				return {
+					title: 'hello, vue'
+				}
+			},
+		})
+		setTimeout(() => {
+			app.title = 'mua dada'
+		},1000)
+	</script>
 </body>
 </html>

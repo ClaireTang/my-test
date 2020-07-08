@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>购物车</title>
+	<style>
+		.active {
+			background-color: #ccc;
+		}
+	</style>
+</head>
+<body>
+	<div id="app">
+		<!-- <message :show="show" @wrap-close="show=$event">新增成功了</message> -->
+		<message :show.sync="show" >
+			<!-- <template v-slot:fail>
+				<h3>不好意思</h3>
+				<p>新增失败了</p>
+			</template> -->
+			<!-- 作用域插槽 -->
+			<template v-slot:success="slotProps">
+				<h3>恭喜{{slotProps.title}}</h3>
+				<p>新增成功了</p>
+			</template>
+			<!-- <template>新增成功了</template> -->
+		</message>
+		<h2 :title="title">
+			{{title}}
+		</h2>
+		
+		<course-add v-model="course" @add-course="addCourse"></course-add>
+		<!-- <course-add :value="course" @input="course = $event" @add-course="addCourse"></course-add> -->
+
+		<courses-list :courses='courses'></courses-list>
+		<p>{{total}}</p>
+		<p>{{totalCount}}</p>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script>
+		Vue.component('message', {
+			props: ['show'],
+			template: `
+				<div v-if="show">
+					<slot name="fail"></slot>
+					<slot name="success" title="来自开课吧"></slot>
+					<slot></slot>
+					<!-- <span @click="$emit('wrap-close',false)">X</span> -->
+					<span @click="$emit('update:show',false)">X</span>
+				</div>
+			`,
+			methods: {
+				
+			},
+		})
+		//abstract抽象组件,无视图
+		//无状态组件（无data），函数式组件functional组件，最好是这样的组件
+		Vue.component('course-add',{
+			props: ['value'],
+			methods: {
+				addCourse() {
+					this.$emit('add-course')
+				},
+				onInput(e) {
+					this.$emit('input',e.target.value)
+				}
+			},
+			template: `
+				<p>
+					<input :value="value" type="text" @input="onInput" v-on:keydown.enter="addCourse"/>
+					<button @click="addCourse">新增</button>
+				</p>
+			`,
+		})
+		Vue.component('courses-list',{
+			data() {
+				return {
+					selectedCourse: ''
+				}
+			},
+			props: {
+				courses: {
+					type: Array,
+					default: []
+				}
+			},
+			template: `
+				<div>
+					
+					<p v-if="courses.length === 0">没有任何课程</p>
+					<!-- <div v-for="c in courses" :key="c" v-bind:class="{active:selectedCourse === c}" @click="selectedCourse = c">
+						{{ c }}
+					</div> -->
+					<div class="courses-list" v-else>
+						<div v-for="c in courses" :key="c" :style="{backgroundColor:selectedCourse === c ? '#ccc' : 'transparent'}" @click="selectedCourse = c">
+							{{ c }}
+						</div>
+					</div>
+					
+				</div>	
+			`
+		})
+		//模拟异步数据调用
+		function getData() {
+			return new Promise(resolve => {
+				setTimeout(() => {
+					resolve ( ["web全站","web高级"] )
+				}, 2000);
+			})
+		}
+
+		const app = new Vue({
+			el: '#app',
+			data() {
+				return {
+					title: '开课吧购物车',
+					totalCount: 0,
+					courses: [],
+					course: '',
+					show: false
+				}
+			},
+			// 加载数据放在created和mounted中差不多
+			async created () {
+				// 组件实例已创建，由于未挂载，dom不存在
+				const courses = await getData();
+				this.courses = courses;
+			},
+			mounted () {
+				//dom已挂载
+			},
+			methods: {
+				addCourse() {
+					this.courses.push(this.course)
+					this.course = ''
+					this.show = true
+				}
+			},
+			computed: {
+				total() {
+					return this.courses.length + '门'     	//返回内容
+				}
+			},
+			//默认情况下watch初始化时不会立刻执行
+			// watch: {
+			// 	courses(newValue, oldValue) {
+			// 		this.totalCount = newValue.length + "门"
+			// 	}
+			// },
+			watch: {
+				courses: {
+					immediate: true,	//立即执行
+					// deep: true,
+					handler(newValue, oldValue) {
+						this.totalCount = newValue.length + "门"	//执行操作
+					}
+				}
+			},
+		})
+		console.log(app.$options.render)
+	</script>
+</body>
+</html>
