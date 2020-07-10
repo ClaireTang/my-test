@@ -63,6 +63,7 @@
 	<script>
 		Vue.prototype.$bus = new Vue()
 		Vue.component('heading',{
+			functional: true,
 			props: {
 				level: {
 					type: String,
@@ -74,11 +75,11 @@
 				},
 				icon: String
 			},
-			render(h) {
-				// this.$slots.default
+			render(h,context) {
+				let {level,title,icon} = context.props
 				let children = []
 				
-				if(this.icon) {
+				if(icon) {
 					// <svg class="icon"><use xlink:href="#icon-cart"/></svg>
 					children.push(
 						h(
@@ -86,19 +87,19 @@
 							{class: 'icon'},
 							[h(
 								'use',
-								{attrs: {'xlink:href':'#icon-' + this.icon}}
+								{attrs: {'xlink:href':'#icon-' + icon}}
 							)]
 						)
 					)
-					children = children.concat(this.$slots.default)
+					// this.$slots.default
+					children = children.concat(context.children)
 				}
-				
 				const vnode = h(
-					'h'+ this.level,
-					{ attrs: {title:this.title} },  //参数2，可选
+					'h'+ level,
+					{ attrs: {title} },  //参数2，可选
 					children
 				)
-				console.log(vnode)
+				// console.log(vnode)
 				return vnode
 			}
 		})

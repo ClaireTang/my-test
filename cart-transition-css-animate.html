@@ -8,15 +8,10 @@
 		.active {
 			background-color: #ccc;
 		}
-		.icon {
-			width: 1em;
-			height: 1em;
-			vertical-align: -0.15em;
-			fill: currentColor;
-			overflow: hidden;
-		}
+		
 	</style>
-	<script src="https://at.alicdn.com/t/font_1934921_uebsb5l7p7a.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.0.0/animate.min.css"/>
+
 </head>
 <body>
 	<div id="app">
@@ -31,7 +26,7 @@
 				<h3>恭喜{{slotProps.title}}</h3>
 				<p>新增成功了</p>
 			</template>
-			<!-- <template>新增成功了</template> -->   
+			<!-- <template>新增成功了</template> -->
 		</message>
 		<message :show.sync="showWarn" >
 			<template v-slot:fail>
@@ -39,9 +34,7 @@
 				<p>没有新增内容</p>
 			</template>
 		</message>
-		<heading level="1" :title="title" icon="cart">{{title}}</heading>
 		<h2 :title="title">
-			<svg class="icon"><use xlink:href="#icon-cart"/></svg>
 			{{title}}
 		</h2>
 		<p>
@@ -62,49 +55,10 @@
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 	<script>
 		Vue.prototype.$bus = new Vue()
-		Vue.component('heading',{
-			props: {
-				level: {
-					type: String,
-					required: true
-				},
-				title: {
-					type: String,
-					default: ''
-				},
-				icon: String
-			},
-			render(h) {
-				// this.$slots.default
-				let children = []
-				
-				if(this.icon) {
-					// <svg class="icon"><use xlink:href="#icon-cart"/></svg>
-					children.push(
-						h(
-							'svg',
-							{class: 'icon'},
-							[h(
-								'use',
-								{attrs: {'xlink:href':'#icon-' + this.icon}}
-							)]
-						)
-					)
-					children = children.concat(this.$slots.default)
-				}
-				
-				const vnode = h(
-					'h'+ this.level,
-					{ attrs: {title:this.title} },  //参数2，可选
-					children
-				)
-				console.log(vnode)
-				return vnode
-			}
-		})
 		Vue.component('message', {
 			props: ['show'],
 			template: `
+			<transition enter-active-class="animate__animated animate__pulse" leave-active-class="animate__animated animate__pulse">
 				<div v-if="show">
 					<slot name="fail"></slot>
 					<slot name="success" title="来自开课吧"></slot>
@@ -112,6 +66,7 @@
 					<!-- <span @click="$emit('wrap-close',false)">X</span> -->
 					<span @click="$emit('update:show',false)">X</span>
 				</div>
+			</transition>
 			`,
 			mounted() {
 				this.$bus.$on('message-close', () => {
@@ -161,9 +116,12 @@
 						{{ c.name }} -￥{{c.price}}
 					</div> -->
 					<div class="courses-list" v-else>
-						<div v-for="c in courses" :key="c.name" :style="{backgroundColor:selectedCourse === c ? '#ccc' : 'transparent'}" @click="selectedCourse = c">
-							{{ c.name }} -￥{{c.price}}
-						</div>
+						<transition-group enter-active-class="animate__animated animate__pulse">
+							<div v-for="c in courses" :key="c.name" :style="{backgroundColor:selectedCourse === c ? '#ccc' : 'transparent'}" @click="selectedCourse = c">
+								{{ c.name }} -￥{{c.price}}
+							</div>
+						</transition-group>
+						
 					</div>
 					
 				</div>	
